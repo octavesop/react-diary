@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 const DiaryEditor = () => {
+  const authorInput = useRef();
+  const contentInput = useRef();
+
   const [state, setState] = useState({
-    author: "사용자명",
+    author: "",
     content: "",
     emotion: 1,
   });
@@ -15,6 +18,16 @@ const DiaryEditor = () => {
   };
 
   const handleSubmit = () => {
+    console.log(state.author.length);
+    console.log(state.content.length);
+    if (state.author.length < 1) {
+      authorInput.current.focus();
+      return;
+    }
+    if (state.content.length < 5) {
+      contentInput.current.focus();
+      return;
+    }
     alert(JSON.stringify(state));
   };
 
@@ -24,6 +37,25 @@ const DiaryEditor = () => {
       <div>
         <input
           defaultValue={state.author}
+          name="author"
+          ref={authorInput}
+          onChange={handleChangeState}
+        />
+        <button type="submit" onClick={() => handleSubmit()}>
+          제출
+        </button>
+        <button
+          type="reset"
+          onClick={() => setState({ author: "", content: "", emotion: 1 })}
+        >
+          지우기
+        </button>
+      </div>
+      <div>
+        <textarea
+          defaultValue={state.content}
+          name="content"
+          ref={contentInput}
           onChange={(event) =>
             setState({
               ...state,
@@ -31,10 +63,6 @@ const DiaryEditor = () => {
             })
           }
         />
-        <button type="submit" onClick={() => handleSubmit()}>
-          제출
-        </button>
-        <button type="reset">지우기</button>
       </div>
       <div>
         <select
@@ -50,12 +78,6 @@ const DiaryEditor = () => {
         </select>
       </div>
       <br />
-      <div>
-        <textarea
-          defaultValue={state.content}
-          onChange={(event) => handleChangeState(event)}
-        />
-      </div>
     </div>
   );
 };
