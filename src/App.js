@@ -20,12 +20,10 @@ function App() {
   }
 
   const onEdit = (targetId, newContent) => {
-    console.log(targetId, newContent)
     setData(data.map((it)=> it.id === targetId ? {...it, content: newContent } : it))
   }
 
   const onRemove =(targetId) => {
-    console.log(`${targetId}가 삭제되었습니다.`)
     const newDiaryList = data.filter((it) => it.id !== targetId);
     setData(newDiaryList)
   }
