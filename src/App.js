@@ -1,54 +1,38 @@
+import { useRef, useState } from "react";
 import "./App.css";
 import DiaryEditor from "./DiaryEditor";
 import DiaryList from "./DiaryList";
 function App() {
-  const dummyList = [
-    {
-      id: 1,
-      author: "정민아",
-      content: "재밌었다",
-      emotion: 5,
-      createdTime: new Date().toISOString(),
-    },
-    {
-      id: 2,
-      author: "정민아",
-      content: "졸려",
-      createdTime: new Date().toISOString(),
-    },
-    {
-      id: 3,
-      author: "정민아",
-      content: "신난다~",
-      emotion: 3,
-      createdTime: new Date().toISOString(),
-    },
-    {
-      id: 4,
-      author: "정민아",
-      content: "슬프다",
-      emotion: 5,
-      createdTime: new Date().toISOString(),
-    },
-    {
-      id: 5,
-      author: "정민아",
-      content: "좋다",
-      emotion: 5,
-      createdTime: new Date().toISOString(),
-    },
-    {
-      id: 6,
-      author: "정민아",
-      emotion: 5,
-      content: "재밌었다",
-      createdTime: new Date().toISOString(),
-    },
-  ];
+  const [data, setData] = useState([]);
+  const dataId = useRef(0);
+
+  const onCreate = (author, content, emotion) => {
+    const newItem = {
+      id: dataId.current,
+      author,
+      content,
+      emotion,
+      createdDate: new Date().toISOString(),
+    }
+
+    dataId.current += 1;
+    setData([newItem, ...data]);
+  }
+
+  const onEdit = (targetId, newContent) => {
+    console.log(targetId, newContent)
+    setData(data.map((it)=> it.id === targetId ? {...it, content: newContent } : it))
+  }
+
+  const onRemove =(targetId) => {
+    console.log(`${targetId}가 삭제되었습니다.`)
+    const newDiaryList = data.filter((it) => it.id !== targetId);
+    setData(newDiaryList)
+  }
   return (
     <div className="App">
-      <DiaryEditor />
-      <DiaryList diaryList={dummyList} />
+      <DiaryEditor onCreate={onCreate}  />
+      <DiaryList onEdit = {onEdit} onRemove = {onRemove} diaryList={data} />
     </div>
   );
 }
