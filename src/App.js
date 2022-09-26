@@ -1,10 +1,35 @@
 import axios from "axios";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef } from "react";
 import "./App.css";
 import DiaryEditor from "./DiaryEditor";
 import DiaryList from "./DiaryList";
-function App() {
-  const [data, setData] = useState([]);
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "INIT": {
+      return action.data;
+    }
+    case "CREATE": {
+      const createdDate = new Date().toISOString();
+      const newItem = {
+        ...action.data,
+        createdDate,
+      };
+      return [newItem, ...state];
+    }
+    case "REMOVE": {
+      return state.filter((it) => it.id !== action.targetId);
+    }
+    case "EDIT":
+    default:
+      return state.map((it) =>
+        it.id === action.targetId ? { ...it, content: action.newContent } : it
+      );
+  }
+};
+
+const App = () => {
+  const [data, dispatch] = useReducer(reducer, []);
   const dataId = useRef(0);
 
   const getData = async () => {
@@ -21,7 +46,7 @@ function App() {
         createdDate: new Date().toISOString(),
       };
     });
-    setData(initData);
+    dispatch({ type: "INIT", data: initData });
   };
 
   useEffect(() => {
@@ -29,28 +54,19 @@ function App() {
   }, []);
 
   const onCreate = useCallback((author, content, emotion) => {
-    const newItem = {
-      id: dataId.current,
-      author,
-      content,
-      emotion,
-      createdDate: new Date().toISOString(),
-    };
-
+    dispatch({
+      type: "CREATE",
+      data: { author, content, emotion, id: dataId.current },
+    });
     dataId.current += 1;
-    setData((data) => [newItem, ...data]);
   }, []);
 
   const onEdit = useCallback((targetId, newContent) => {
-    setData((data) => {
-      data.map((it) =>
-        it.id === targetId ? { ...it, content: newContent } : it
-      );
-    });
+    dispatch({ type: "EDIT", targetId, newContent });
   }, []);
 
   const onRemove = useCallback((targetId) => {
-    setData((data) => data.filter((it) => it.id !== targetId));
+    dispatch({ type: "REMOVE", targetId });
   }, []);
   return (
     <div className="App">
@@ -58,6 +74,6 @@ function App() {
       <DiaryList onEdit={onEdit} onRemove={onRemove} diaryList={data} />
     </div>
   );
-}
+};
 
 export default App;
