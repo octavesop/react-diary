@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 import DiaryEditor from "./DiaryEditor";
 import DiaryList from "./DiaryList";
@@ -11,7 +11,6 @@ function App() {
     const { data } = await axios.get(
       "https://jsonplaceholder.typicode.com/comments"
     );
-    console.log(data);
 
     const initData = data.slice(0, 20).map((it) => {
       return {
@@ -29,7 +28,7 @@ function App() {
     getData();
   }, []);
 
-  const onCreate = (author, content, emotion) => {
+  const onCreate = useCallback((author, content, emotion) => {
     const newItem = {
       id: dataId.current,
       author,
@@ -39,21 +38,20 @@ function App() {
     };
 
     dataId.current += 1;
-    setData([newItem, ...data]);
-  };
+    setData((data) => [newItem, ...data]);
+  }, []);
 
-  const onEdit = (targetId, newContent) => {
-    setData(
+  const onEdit = useCallback((targetId, newContent) => {
+    setData((data) => {
       data.map((it) =>
         it.id === targetId ? { ...it, content: newContent } : it
-      )
-    );
-  };
+      );
+    });
+  }, []);
 
-  const onRemove = (targetId) => {
-    const newDiaryList = data.filter((it) => it.id !== targetId);
-    setData(newDiaryList);
-  };
+  const onRemove = useCallback((targetId) => {
+    setData((data) => data.filter((it) => it.id !== targetId));
+  }, []);
   return (
     <div className="App">
       <DiaryEditor onCreate={onCreate} />
