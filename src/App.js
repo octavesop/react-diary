@@ -1,8 +1,13 @@
 import axios from "axios";
-import { useCallback, useEffect, useReducer, useRef } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+} from "react";
 import "./App.css";
 import DiaryEditor from "./DiaryEditor";
-import DiaryList from "./DiaryList";
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -27,6 +32,10 @@ const reducer = (state, action) => {
       );
   }
 };
+
+export const DiaryStateContext = React.createContext();
+
+export const DiaryDispatchContext = React.createContext();
 
 const App = () => {
   const [data, dispatch] = useReducer(reducer, []);
@@ -68,11 +77,20 @@ const App = () => {
   const onRemove = useCallback((targetId) => {
     dispatch({ type: "REMOVE", targetId });
   }, []);
+
+  const memoizedDispatches = useMemo(() => {
+    return { onCreate, onEdit, onRemove };
+  }, []);
+
   return (
-    <div className="App">
-      <DiaryEditor onCreate={onCreate} />
-      <DiaryList onEdit={onEdit} onRemove={onRemove} diaryList={data} />
-    </div>
+    <DiaryStateContext.Provider value={data}>
+      <DiaryDispatchContext.Provider value={memoizedDispatches}>
+        <div className="App">
+          <DiaryEditor />
+          <diaryList diaryList={data} />
+        </div>
+      </DiaryDispatchContext.Provider>
+    </DiaryStateContext.Provider>
   );
 };
 
